@@ -3,11 +3,12 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Project root (backend/)
-BASE_DIR = Path(__file__).resolve().parents[2]
+BASE_DIR = Path(__file__).resolve().parents[3]
 
 # Load .env
 load_dotenv(BASE_DIR / ".env")
-
+print("BASE_DIR:", BASE_DIR)
+print(".env exists:", (BASE_DIR / ".env").exists())
 # ==========================
 # Application
 # ==========================
