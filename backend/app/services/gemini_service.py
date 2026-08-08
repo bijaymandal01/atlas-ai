@@ -26,3 +26,16 @@ def generate_response(message, history, memory):
     )
 
     return response.text
+
+# =====================================
+# Research
+# =====================================
+
+def generate_research(prompt: str):
+
+    response = client.models.generate_content(
+        model=GEMINI_MODEL,
+        contents=prompt
+    )
+
+    return response.text
