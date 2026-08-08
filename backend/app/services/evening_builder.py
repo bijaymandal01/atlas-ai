@@ -11,9 +11,9 @@ from app.services.news_service import (
 )
 
 
-def build_morning_data(watchlist):
+def build_evening_data(watchlist):
     """
-    Collect all data required for the Morning Brief.
+    Collect data required for the Evening Market Wrap.
     """
 
     companies = []
@@ -23,19 +23,10 @@ def build_morning_data(watchlist):
         company = item["company_name"]
         ticker = item["ticker"]
 
-        # -------------------------
-        # Live Price
-        # -------------------------
         price = get_stock_price(ticker)
 
-        # -------------------------
-        # Performance
-        # -------------------------
         performance = get_stock_performance(ticker)
 
-        # -------------------------
-        # Latest News
-        # -------------------------
         news = get_company_news(
             company,
             limit=3
