@@ -15,10 +15,12 @@ from app.database.memory_service import (
 from app.services.gemini_service import generate_response
 from app.services.memory_extractor import extract_memory
 
+# Watchlist
 from app.services.watchlist_service import (
     handle_watchlist_command,
 )
 
+# Daily Briefing
 from app.services.briefing_ai import (
     is_briefing_request,
 )
@@ -27,6 +29,25 @@ from app.services.briefing_service import (
     generate_daily_briefing,
 )
 
+# Morning Brief
+from app.services.morning_ai import (
+    detect_morning_intent,
+)
+
+from app.services.morning_service import (
+    generate_morning_brief,
+)
+
+# Evening Wrap
+from app.services.evening_ai import (
+    detect_evening_intent,
+)
+
+from app.services.evening_service import (
+    generate_evening_wrap,
+)
+
+# Portfolio
 from app.services.portfolio_ai import (
     detect_portfolio_intent,
 )
@@ -38,9 +59,10 @@ from app.services.portfolio_service import (
 
 def chat(telegram_user_id: int, message: str):
 
-    # -----------------------------
+    # --------------------------------------------------
     # Find User
-    # -----------------------------
+    # --------------------------------------------------
+
     user = get_user(telegram_user_id)
 
     if not user.data:
@@ -50,16 +72,51 @@ def chat(telegram_user_id: int, message: str):
 
     user_id = user.data[0]["id"]
 
-    # -----------------------------
+    # --------------------------------------------------
     # Load Memory & History
-    # -----------------------------
+    # --------------------------------------------------
+
     memory = get_user_memory(user_id)
 
     history = get_recent_messages(user_id)
 
-    # =====================================================
+    # ==================================================
+    # MORNING BRIEF
+    # ==================================================
+
+    if detect_morning_intent(message):
+
+        report = generate_morning_brief(
+            telegram_user_id
+        )
+
+        save_message(user_id, "user", message)
+        save_message(user_id, "assistant", report)
+
+        return {
+            "reply": report
+        }
+
+    # ==================================================
+    # EVENING MARKET WRAP
+    # ==================================================
+
+    if detect_evening_intent(message):
+
+        report = generate_evening_wrap(
+            telegram_user_id
+        )
+
+        save_message(user_id, "user", message)
+        save_message(user_id, "assistant", report)
+
+        return {
+            "reply": report
+        }
+
+    # ==================================================
     # DAILY BRIEFING
-    # =====================================================
+    # ==================================================
 
     if is_briefing_request(message):
 
@@ -67,25 +124,16 @@ def chat(telegram_user_id: int, message: str):
             telegram_user_id
         )
 
-        save_message(
-            user_id,
-            "user",
-            message
-        )
-
-        save_message(
-            user_id,
-            "assistant",
-            report
-        )
+        save_message(user_id, "user", message)
+        save_message(user_id, "assistant", report)
 
         return {
             "reply": report
         }
 
-    # =====================================================
+    # ==================================================
     # WATCHLIST
-    # =====================================================
+    # ==================================================
 
     watchlist_reply = handle_watchlist_command(
         user_id,
@@ -94,25 +142,16 @@ def chat(telegram_user_id: int, message: str):
 
     if watchlist_reply:
 
-        save_message(
-            user_id,
-            "user",
-            message
-        )
-
-        save_message(
-            user_id,
-            "assistant",
-            watchlist_reply
-        )
+        save_message(user_id, "user", message)
+        save_message(user_id, "assistant", watchlist_reply)
 
         return {
             "reply": watchlist_reply
         }
 
-    # =====================================================
+    # ==================================================
     # PORTFOLIO DASHBOARD
-    # =====================================================
+    # ==================================================
 
     if detect_portfolio_intent(message):
 
@@ -120,35 +159,26 @@ def chat(telegram_user_id: int, message: str):
             telegram_user_id
         )
 
-        save_message(
-            user_id,
-            "user",
-            message
-        )
-
-        save_message(
-            user_id,
-            "assistant",
-            report
-        )
+        save_message(user_id, "user", message)
+        save_message(user_id, "assistant", report)
 
         return {
             "reply": report
         }
 
-    # =====================================================
+    # ==================================================
     # NORMAL AI CHAT
-    # =====================================================
+    # ==================================================
 
     answer = generate_response(
         message=message,
         history=history,
-        memory=memory
+        memory=memory,
     )
 
-    # -----------------------------
+    # --------------------------------------------------
     # Extract Memory
-    # -----------------------------
+    # --------------------------------------------------
 
     extracted = extract_memory(message)
 
@@ -170,20 +200,20 @@ def chat(telegram_user_id: int, message: str):
             )
         )
 
-    # -----------------------------
+    # --------------------------------------------------
     # Save Conversation
-    # -----------------------------
+    # --------------------------------------------------
 
     save_message(
         user_id,
         "user",
-        message
+        message,
     )
 
     save_message(
         user_id,
         "assistant",
-        answer
+        answer,
     )
 
     return {
