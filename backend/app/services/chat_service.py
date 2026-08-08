@@ -4,18 +4,19 @@ from app.database.user_service import get_user
 
 from app.database.conversation_service import (
     save_message,
-    get_recent_messages
+    get_recent_messages,
 )
 
 from app.database.memory_service import (
     get_user_memory,
-    get_memory_by_key,
-    save_memory
+    save_memory,
 )
 
 from app.services.gemini_service import generate_response
 from app.services.memory_extractor import extract_memory
-
+from app.services.watchlist_service import handle_watchlist_command
+from app.services.briefing_ai import is_briefing_request
+from app.services.briefing_service import generate_daily_briefing
 
 def chat(telegram_user_id: int, message: str):
 
@@ -37,6 +38,57 @@ def chat(telegram_user_id: int, message: str):
     memory = get_user_memory(user_id)
     history = get_recent_messages(user_id)
 
+# -----------------------------
+# Daily Briefing
+# -----------------------------
+    if is_briefing_request(message):
+
+        report = generate_daily_briefing(
+            telegram_user_id
+        )
+
+        save_message(
+            user_id,
+            "user",
+            message
+        )
+
+        save_message(
+            user_id,
+            "assistant",
+            report
+        )
+
+        return {
+            "reply": report
+        }
+
+        # -----------------------------
+        # Handle Watchlist Commands
+        # -----------------------------
+        watchlist_reply = handle_watchlist_command(
+            user_id,
+            message
+        )
+
+        if watchlist_reply:
+
+            save_message(
+                user_id,
+                "user",
+                message
+            )
+
+            save_message(
+                user_id,
+                "assistant",
+                watchlist_reply
+            )
+
+            return {
+                "reply": watchlist_reply
+            }
+
     # -----------------------------
     # Generate AI Response
     # -----------------------------
@@ -51,13 +103,7 @@ def chat(telegram_user_id: int, message: str):
     # -----------------------------
     extracted = extract_memory(message)
 
-    watchlist_updated = False
-    current_watchlist = []
-    newly_added = []
-
-    # -----------------------------
     # Save Role
-    # -----------------------------
     if extracted.get("role"):
 
         save_memory(
@@ -66,9 +112,7 @@ def chat(telegram_user_id: int, message: str):
             json.dumps(extracted["role"])
         )
 
-    # -----------------------------
     # Save Briefing Time
-    # -----------------------------
     if extracted.get("briefing_time"):
 
         save_memory(
@@ -76,59 +120,6 @@ def chat(telegram_user_id: int, message: str):
             "briefing_time",
             json.dumps(extracted["briefing_time"])
         )
-
-    # -----------------------------
-    # Merge Companies
-    # -----------------------------
-    companies = extracted.get("companies_to_add", [])
-
-    if companies:
-
-        existing = get_memory_by_key(
-            user_id,
-            "companies"
-        )
-
-        old_companies = []
-
-        if existing:
-
-            old_companies = existing["memory_value"]
-
-            if not isinstance(old_companies, list):
-                old_companies = []
-
-        # Find only new companies
-        for company in companies:
-            if company not in old_companies:
-                newly_added.append(company)
-
-        merged = list(
-            dict.fromkeys(
-                old_companies + companies
-            )
-        )
-
-        current_watchlist = merged
-
-        save_memory(
-            user_id,
-            "companies",
-            json.dumps(merged)
-        )
-
-        if newly_added:
-            watchlist_updated = True
-
-    else:
-
-        existing = get_memory_by_key(
-            user_id,
-            "companies"
-        )
-
-        if existing:
-            current_watchlist = existing["memory_value"]
 
     # -----------------------------
     # Save Conversation
@@ -142,29 +133,12 @@ def chat(telegram_user_id: int, message: str):
     save_message(
         user_id,
         "assistant",
-        message=answer
+        answer
     )
 
     # -----------------------------
-    # Build Final Response
+    # Return Response
     # -----------------------------
-    if watchlist_updated:
-
-        answer += "\n\n━━━━━━━━━━━━━━━━━━━━━━"
-        answer += "\n✅ Watchlist Updated"
-
-        answer += "\n\n🆕 Added"
-
-        for company in newly_added:
-            answer += f"\n• {company}"
-
-        answer += f"\n\n📊 Current Watchlist ({len(current_watchlist)})"
-
-        for company in current_watchlist:
-            answer += f"\n• {company}"
-
-        answer += "\n━━━━━━━━━━━━━━━━━━━━━━"
-
     return {
         "reply": answer
     }

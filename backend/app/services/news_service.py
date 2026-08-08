@@ -1,4 +1,5 @@
 import feedparser
+from urllib.parse import quote
 
 
 def get_company_news(company: str, limit: int = 5):
@@ -7,9 +8,11 @@ def get_company_news(company: str, limit: int = 5):
     Removes duplicate headlines.
     """
 
+    query = quote(company)
+
     url = (
         f"https://news.google.com/rss/search?"
-        f"q={company}&hl=en-US&gl=US&ceid=US:en"
+        f"q={query}&hl=en-US&gl=US&ceid=US:en"
     )
 
     feed = feedparser.parse(url)
@@ -28,8 +31,8 @@ def get_company_news(company: str, limit: int = 5):
 
         news.append({
             "title": title,
-            "source": getattr(item.source, "title", "Unknown"),
-            "published": item.published,
+            "source": getattr(getattr(item, "source", None), "title", "Unknown"),
+            "published": getattr(item, "published", "Unknown"),
             "link": item.link,
         })
 
