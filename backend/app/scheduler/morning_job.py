@@ -13,11 +13,23 @@ from app.services.morning_service import (
 
 def run_morning_job():
 
+    print("=" * 60)
+    print("🌅 MORNING JOB STARTED")
+    print("=" * 60)
+
     users = get_all_users()
+
+    total = len(users.data)
+    success = 0
+    failed = 0
+
+    print(f"Total Users : {total}")
 
     for user in users.data:
 
         telegram_id = user["telegram_user_id"]
+
+        print(f"\nProcessing User : {telegram_id}")
 
         try:
 
@@ -30,12 +42,25 @@ def run_morning_job():
                 report,
             )
 
+            success += 1
+
             print(
-                f"Morning Brief sent to {telegram_id}"
+                f"✅ Morning Brief sent to {telegram_id}"
             )
 
         except Exception as e:
 
+            failed += 1
+
             print(
-                f"Failed for {telegram_id}: {e}"
+                f"❌ Failed for {telegram_id}: {e}"
             )
+
+            continue
+
+    print("\n" + "=" * 60)
+    print("🌅 MORNING JOB COMPLETED")
+    print(f"Total Users : {total}")
+    print(f"Successful : {success}")
+    print(f"Failed : {failed}")
+    print("=" * 60)
