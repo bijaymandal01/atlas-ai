@@ -7,24 +7,23 @@ Compare the following companies using ONLY the provided data.
 
 Begin your report with a comparison table.
 
-| Metric | Company A | Company B |
-|--------|-----------|-----------|
-| Current Price | | |
-| Market Cap | | |
-| Revenue | | |
-| Profit Margin | | |
-| ROE | | |
-| ROA | | |
-| Operating Cash Flow | | |
-| Free Cash Flow | | |
-| Total Cash | | |
-| Total Debt | | |
-| Today | | |
-| This Week | | |
-| This Month | | |
-| This Year | | |
-| Last 5 Years | | |
-
+| Metric | Company A v/s Company B |
+--------|-----------|-----------|
+ 1)Current Price -> v/s 
+ 2)Market Cap -> v/s 
+ 3)Revenue -> v/s 
+ 4)Profit Margin -> v/s 
+ 5)ROE -> v/s 
+ 6)ROA -> v/s 
+ 7)Operating Cash Flow -> v/s 
+ Free Cash Flow -> v/s 
+ 8)Total Cash -> v/s 
+ 9)Total Debt -> v/s 
+ 10)Today -> v/s 
+ 11)This Week -> v/s 
+ 12)This Month -> v/s 
+ 13)This Year -> v/s 
+ 14)Last 5 Years -> v/s 
 Then generate the following sections.
 
 # Executive Summary
