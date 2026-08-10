@@ -4,7 +4,9 @@ from app.services.chat_service import chat
 
 from app.scheduler.telegram_sender import (
     send_telegram_message,
+    send_main_menu,
 )
+
 
 router = APIRouter(
     prefix="/telegram",
@@ -33,6 +35,13 @@ def telegram_webhook(update: dict):
         telegram_user_id,
         response["reply"],
     )
+
+    # Show Atlas menu when user starts the bot
+    if text.lower().strip() in ["/start", "start"]:
+
+        send_main_menu(
+            telegram_user_id
+        )
 
     return {
         "ok": True

@@ -37,20 +37,15 @@ def format_telegram_message(message: str) -> str:
         # -----------------------------------------
         # Markdown table
         # -----------------------------------------
+
         if stripped.startswith("|") and "|" in stripped:
-
             table_buffer.append(line)
             continue
 
-        # Table separator
-        if (
-            stripped.startswith("|")
-            and "---" in stripped
-        ):
-            table_buffer.append(line)
-            continue
-
+        # -----------------------------------------
         # End table
+        # -----------------------------------------
+
         flush_table()
 
         # -----------------------------------------
@@ -88,41 +83,46 @@ def format_telegram_message(message: str) -> str:
             continue
 
         # -----------------------------------------
-        # Bold text
+        # Normal text
         # -----------------------------------------
 
         escaped = html.escape(line)
 
+        # Bold
         escaped = re.sub(
             r"\*\*(.*?)\*\*",
             r"<b>\1</b>",
             escaped
         )
 
-        # -----------------------------------------
-        # Italic text
-        # -----------------------------------------
-
+        # Italic
         escaped = re.sub(
-            r"\*(.*?)\*",
+            r"(?<!\*)\*(?!\*)(.*?)\*(?!\*)",
             r"<i>\1</i>",
             escaped
         )
 
         formatted.append(escaped)
 
-    # Flush remaining table
+    # -----------------------------------------
+    # Flush final table
+    # -----------------------------------------
+
     flush_table()
 
     return "\n".join(formatted)
 
 
+# ==================================================
+# NORMAL TELEGRAM MESSAGE
+# ==================================================
+
 def send_telegram_message(chat_id: int, message: str):
     """
-    Send a Telegram message.
+    Send an Atlas AI message to Telegram.
 
-    Converts Atlas Markdown-style responses
-    into Telegram HTML formatting.
+    Converts Markdown-style AI output into
+    Telegram HTML formatting.
 
     Automatically splits long messages.
     """
@@ -157,5 +157,59 @@ def send_telegram_message(chat_id: int, message: str):
         )
 
         response.raise_for_status()
+
+    return True
+
+
+# ==================================================
+# ATLAS AI TELEGRAM MENU
+# ==================================================
+
+def send_main_menu(chat_id: int):
+    """
+    Send the persistent Atlas AI Telegram menu.
+    """
+
+    url = (
+        f"https://api.telegram.org/bot"
+        f"{TELEGRAM_BOT_TOKEN}/sendMessage"
+    )
+
+    keyboard = {
+        "keyboard": [
+            [
+                {"text": "📊 Portfolio"},
+                {"text": "⭐ Watchlist"},
+            ],
+            [
+                {"text": "🔍 Research Company"},
+                {"text": "📈 Compare Companies"},
+            ],
+            [
+                {"text": "🌅 Morning Brief"},
+                {"text": "🌆 Evening Wrap"},
+            ],
+            [
+                {"text": "📰 Daily Briefing"},
+            ],
+        ],
+        "resize_keyboard": True,
+        "is_persistent": True,
+        "input_field_placeholder": "Ask Atlas anything..."
+    }
+
+    payload = {
+        "chat_id": chat_id,
+        "text": "🤖 Atlas AI menu",
+        "reply_markup": keyboard,
+    }
+
+    response = requests.post(
+        url,
+        json=payload,
+        timeout=30,
+    )
+
+    response.raise_for_status()
 
     return True
