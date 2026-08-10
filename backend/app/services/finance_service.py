@@ -1,20 +1,101 @@
 import yfinance as yf
 
 
+# =========================================
+# Company / Ticker Search
+# =========================================
+
 def search_company(company: str):
     """
-    Returns the ticker entered by the user.
-    For MVP, users can enter tickers directly (AAPL, TSLA, NVDA).
-    Later we'll add fuzzy search.
-    """
-    return company.upper()
+    Resolve a company name or ticker to a Yahoo Finance ticker.
 
+    Examples:
+        Microsoft -> MSFT
+        Apple -> AAPL
+        Tesla -> TSLA
+        MSFT -> MSFT
+    """
+
+    company = company.strip()
+
+    if not company:
+        return None
+
+    # -----------------------------------------
+    # Search Yahoo Finance
+    # -----------------------------------------
+
+    try:
+
+        search = yf.Search(company)
+
+        quotes = search.quotes
+
+        if quotes:
+
+            # Exact company-name match
+            for quote in quotes:
+
+                name = (
+                    quote.get("longname")
+                    or quote.get("shortname")
+                    or ""
+                )
+
+                if name.lower() == company.lower():
+
+                    symbol = quote.get("symbol")
+
+                    if symbol:
+                        return symbol
+
+            # First equity result
+            for quote in quotes:
+
+                if quote.get("quoteType") == "EQUITY":
+
+                    symbol = quote.get("symbol")
+
+                    if symbol:
+                        return symbol
+
+    except Exception:
+        pass
+
+    # -----------------------------------------
+    # Fallback: input may already be a ticker
+    # -----------------------------------------
+
+    symbol = company.upper()
+
+    try:
+
+        ticker = yf.Ticker(symbol)
+
+        history = ticker.history(
+            period="5d"
+        )
+
+        if not history.empty:
+            return symbol
+
+    except Exception:
+        pass
+
+    return None
+
+
+# =========================================
+# Company Information
+# =========================================
 
 def get_company_info(symbol: str):
     """
-    Company profile
+    Company profile.
     """
+
     ticker = yf.Ticker(symbol)
+
     info = ticker.info
 
     return {
@@ -31,11 +112,17 @@ def get_company_info(symbol: str):
     }
 
 
+# =========================================
+# Stock Price
+# =========================================
+
 def get_stock_price(symbol: str):
     """
-    Live stock quote
+    Live stock quote.
     """
+
     ticker = yf.Ticker(symbol)
+
     info = ticker.fast_info
 
     return {
@@ -47,10 +134,15 @@ def get_stock_price(symbol: str):
     }
 
 
+# =========================================
+# Financial Statements
+# =========================================
+
 def get_financials(symbol: str):
     """
-    Financial statements
+    Financial statements.
     """
+
     ticker = yf.Ticker(symbol)
 
     return {
@@ -60,19 +152,34 @@ def get_financials(symbol: str):
     }
 
 
+# =========================================
+# Historical Prices
+# =========================================
+
 def get_history(symbol: str, period="1y"):
     """
-    Historical prices
+    Historical prices.
     """
+
     ticker = yf.Ticker(symbol)
 
-    history = ticker.history(period=period)
+    history = ticker.history(
+        period=period
+    )
 
-    return history.reset_index().to_dict(orient="records")
+    return history.reset_index().to_dict(
+        orient="records"
+    )
+
+
+# =========================================
+# Financial Summary
+# =========================================
 
 def get_financial_summary(symbol: str):
 
     ticker = yf.Ticker(symbol)
+
     info = ticker.info
 
     return {

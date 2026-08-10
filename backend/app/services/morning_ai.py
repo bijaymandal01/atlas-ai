@@ -6,18 +6,12 @@ def detect_morning_intent(message: str):
     message = message.lower().strip()
 
     keywords = [
-
         "morning brief",
         "morning briefing",
         "good morning",
         "morning update",
-        "daily briefing",
-        "today's briefing",
-        "today briefing",
-        "start my day",
         "morning report",
-        "daily report",
-
+        "start my day",
     ]
 
     return any(
