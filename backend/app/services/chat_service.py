@@ -1,6 +1,9 @@
 import json
 
-from app.database.user_service import get_user
+from app.database.user_service import (
+    get_user,
+    create_user,
+)
 
 from app.database.conversation_service import (
     save_message,
@@ -19,6 +22,7 @@ from app.services.memory_extractor import extract_memory
 from app.services.watchlist_service import (
     handle_watchlist_command,
 )
+
 
 # Daily Briefing
 from app.services.briefing_ai import (
@@ -56,6 +60,11 @@ from app.services.portfolio_service import (
     generate_portfolio_report,
 )
 
+from app.services.onboarding_service import (
+    onboarding_required,
+    get_next_question,
+    process_onboarding,
+)
 
 def chat(telegram_user_id: int, message: str):
 
@@ -65,11 +74,17 @@ def chat(telegram_user_id: int, message: str):
 
     user = get_user(telegram_user_id)
 
+    # Auto-register new Telegram users
     if not user.data:
-        return {
-            "reply": "User not found."
-        }
 
+        create_user({
+            "telegram_user_id": telegram_user_id
+        })
+
+        # Fetch newly created user
+        user = get_user(telegram_user_id)
+
+    # Get User ID
     user_id = user.data[0]["id"]
 
     # --------------------------------------------------
@@ -79,10 +94,39 @@ def chat(telegram_user_id: int, message: str):
     memory = get_user_memory(user_id)
 
     history = get_recent_messages(user_id)
+    # --------------------------------------------------
+    # Onboarding
+    # --------------------------------------------------
+
+# --------------------------------------------------
+# Onboarding
+# --------------------------------------------------
+
+    if onboarding_required(memory):
+
+        if message.lower() in ["hi", "hello", "start"]:
+
+            return {
+                "reply": get_next_question(memory)
+            }
+
+        reply = process_onboarding(
+            user_id,
+            memory,
+            message
+        )
+
+        return {
+            "reply": reply
+        }
 
     # ==================================================
     # MORNING BRIEF
     # ==================================================
+
+# ==================================================
+# MORNING BRIEF
+# ==================================================
 
     if detect_morning_intent(message):
 
@@ -96,6 +140,7 @@ def chat(telegram_user_id: int, message: str):
         return {
             "reply": report
         }
+
 
     # ==================================================
     # EVENING MARKET WRAP
@@ -114,6 +159,7 @@ def chat(telegram_user_id: int, message: str):
             "reply": report
         }
 
+
     # ==================================================
     # DAILY BRIEFING
     # ==================================================
@@ -130,7 +176,6 @@ def chat(telegram_user_id: int, message: str):
         return {
             "reply": report
         }
-
     # ==================================================
     # WATCHLIST
     # ==================================================

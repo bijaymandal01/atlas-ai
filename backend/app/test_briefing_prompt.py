@@ -2,6 +2,10 @@ from app.services.briefing_builder import (
     build_briefing_dashboard,
 )
 
+from app.services.briefing_prompt import (
+    build_briefing_prompt,
+)
+
 
 class MockWatchlist:
 
@@ -22,22 +26,24 @@ class MockWatchlist:
 
 
 print("=" * 70)
-print("DAILY BRIEFING DASHBOARD TEST")
+print("DAILY BRIEFING PROMPT TEST")
 print("=" * 70)
-
-watchlist = MockWatchlist()
 
 try:
 
     dashboard = build_briefing_dashboard(
-        watchlist
+        MockWatchlist()
+    )
+
+    prompt = build_briefing_prompt(
+        dashboard
     )
 
     print("\n" + "=" * 70)
-    print("GENERATED DASHBOARD")
+    print("GENERATED PROMPT")
     print("=" * 70)
 
-    print(dashboard)
+    print(prompt)
 
     print("\n" + "=" * 70)
     print("VALIDATION")
@@ -45,53 +51,41 @@ try:
 
     checks = {
 
-        "Daily Brief title":
-            "ATLAS AI DAILY BRIEF" in dashboard,
+        "Atlas AI present":
+            "Atlas AI" in prompt,
 
-        "Market Snapshot":
-            "MARKET SNAPSHOT" in dashboard,
+        "Dashboard present":
+            dashboard in prompt,
 
-        "Watchlist section":
-            "WATCHLIST" in dashboard,
+        "Executive Summary":
+            "Executive Summary" in prompt,
 
-        "Companies count":
-            "Companies : 3" in dashboard,
+        "Market Themes":
+            "Market Themes" in prompt,
 
-        "Microsoft present":
-            "MICROSOFT" in dashboard,
+        "Risks":
+            "Risks" in prompt,
 
-        "Apple present":
-            "APPLE" in dashboard,
+        "Atlas Insight":
+            "Atlas Insight" in prompt,
 
-        "Tesla present":
-            "TESLA" in dashboard,
+        "Watch Today":
+            "Watch Today" in prompt,
 
-        "Microsoft ticker":
-            "Ticker : MSFT" in dashboard,
+        "No price repetition instruction":
+            "Do not repeat stock prices" in prompt,
 
-        "Apple ticker":
-            "Ticker : AAPL" in dashboard,
+        "No headline repetition instruction":
+            "Do not repeat news headlines" in prompt,
 
-        "Tesla ticker":
-            "Ticker : TSLA" in dashboard,
+        "400 word limit":
+            "400 words" in prompt,
 
-        "Current price":
-            "Current :" in dashboard,
+        "Bloomberg style":
+            "Bloomberg-style" in prompt,
 
-        "Change":
-            "Change" in dashboard,
-
-        "High":
-            "High" in dashboard,
-
-        "Low":
-            "Low" in dashboard,
-
-        "Headlines":
-            "Headlines" in dashboard,
-
-        "Dashboard not empty":
-            bool(dashboard.strip()),
+        "Markdown instruction":
+            "markdown headings and bullet points" in prompt,
     }
 
     passed = 0
