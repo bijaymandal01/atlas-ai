@@ -1,41 +1,30 @@
 from app.services.chat_service import chat
 
-
 TEST_USER_ID = 9999999997
 
-tests = [
-    "Compare Apple vs Microsoft",
-    "Compare Tesla vs Nvidia",
-    "Tell me about Apple",
-    "Analyze Microsoft",
-    "Show my portfolio",
-    "Show my watchlist",
-]
-
 print("=" * 70)
-print("CHAT SERVICE — COMPARISON INTEGRATION TEST")
+print("LOCAL TELEGRAM CHAT — COMPARISON TEST")
 print("=" * 70)
 
-for message in tests:
+message = "Compare Apple vs Microsoft"
 
-    print("\n" + "-" * 70)
-    print("USER:")
-    print(message)
+print("\nUSER:")
+print(message)
 
-    try:
+try:
 
-        response = chat(
-            TEST_USER_ID,
-            message
-        )
+    response = chat(
+        TEST_USER_ID,
+        message
+    )
 
-        print("\nATLAS:")
-        print(response["reply"])
+    print("\nATLAS:")
+    print(response["reply"])
 
-        print("\nSTATUS: PASS")
+    print("\nSTATUS: PASS")
 
-    except Exception as e:
+except Exception as e:
 
-        print("\nSTATUS: FAIL")
-        print("ERROR:")
-        print(e)
+    print("\nSTATUS: FAIL")
+    print("ERROR:")
+    print(e)
