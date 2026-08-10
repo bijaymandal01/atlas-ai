@@ -1,9 +1,10 @@
-from app.scheduler.telegram_sender import send_main_menu
+from app.scheduler.telegram_sender import send_telegram_message
 
+CHAT_ID = 6587173346
 
-CHAT_ID = 6587173346  # replace with your Telegram chat ID
-
-
-send_main_menu(CHAT_ID)
+send_telegram_message(
+    CHAT_ID,
+    "🤖 Atlas AI menu test"
+)
 
 print("STATUS: MENU SENT")
